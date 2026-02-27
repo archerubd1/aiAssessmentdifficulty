@@ -1,55 +1,43 @@
 <?php
 include 'engine.php';
 session_start();
-
 $sessionId = $_SESSION['user_id'];
 
-// 1. Fetch User's Final Ability
-$res = $conn->query("SELECT current_ability, questions_answered FROM user_sessions WHERE id = $sessionId");
-$user = $res->fetch_assoc();
-
-// 2. Fetch Performance Breakdown
-$stats = $conn->query("
-    SELECT 
-        CASE 
-            WHEN q.difficulty < 0.4 THEN 'Beginner'
-            WHEN q.difficulty < 0.7 THEN 'Intermediate'
-            ELSE 'Advanced'
-        END as tier,
-        COUNT(*) as total,
-        SUM(r.is_correct) as correct
-    FROM response_log r
-    JOIN questions q ON r.question_id = q.id
+$user = $conn->query("SELECT * FROM user_sessions WHERE id = $sessionId")->fetch_assoc();
+$responses = $conn->query("
+    SELECT q.difficulty, r.is_correct 
+    FROM response_log r 
+    JOIN questions q ON r.question_id = q.id 
     WHERE r.session_id = $sessionId
-    GROUP BY tier
 ");
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Assessment Results</title>
+    <title>Assessment Insights</title>
     <style>
-        .bar { height: 20px; background: #4CAF50; margin-bottom: 10px; }
-        .container { width: 50%; margin: auto; font-family: sans-serif; }
+        body { font-family: sans-serif; padding: 50px; background: #fff; text-align: center; }
+        .graph-container { display: flex; align-items: flex-end; height: 150px; gap: 10px; justify-content: center; margin: 40px 0; border-bottom: 2px solid #333; }
+        .bar { width: 30px; background: #6c5ce7; transition: height 1s; position: relative; }
+        .bar.wrong { background: #fab1a0; }
+        .final-score { font-size: 48px; color: #6c5ce7; margin: 0; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Assessment Complete</h2>
-        <p>Your Estimated Skill Level: <strong><?php echo number_ those_format($user['current_ability'] * 100, 1); ?>%</strong></p>
-        <p>Questions Answered: <?php echo $user['questions_answered']; ?></p>
-        
-        <hr>
-        <h3>Performance by Tier:</h3>
-        <?php while($row = $stats->fetch_assoc()): 
-            $perc = ($row['correct'] / $row['total']) * 100; ?>
-            <p><?php echo $row['tier']; ?>: <?php echo $row['correct']; ?>/<?php echo $row['total']; ?></p>
-            <div class="bar" style="width: <?php echo $perc; ?>%;"></div>
+    <h1>AI Skill Certificate</h1>
+    <p>Estimated Mastery Level:</p>
+    <h2 class="final-score"><?php echo round($user['current_ability'] * 100); ?>%</h2>
+    
+    <div class="graph-container">
+        <?php while($row = $responses->fetch_assoc()): ?>
+            <div class="bar <?php echo $row['is_correct'] ? '' : 'wrong'; ?>" 
+                 style="height: <?php echo ($row['difficulty'] * 150); ?>px;"
+                 title="Diff: <?php echo $row['difficulty']; ?>">
+            </div>
         <?php endwhile; ?>
-        
-        <br>
-        <a href="quiz.php?reset=1">Restart Assessment</a>
     </div>
+    <p>The graph above shows the AI's <strong>Difficulty Calibration Path</strong> during your session.</p>
+    <a href="quiz.php?reset=1">Start New Adaptive Session</a>
 </body>
 </html>

@@ -1,28 +1,26 @@
 CREATE DATABASE ai_assessment;
 USE ai_assessment;
 
--- Stores questions with a difficulty rating (0.0 to 1.0)
+-- 1. Stores the questions and their 'fixed' difficulty weight
 CREATE TABLE questions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     question_text TEXT,
     correct_option CHAR(1),
-    difficulty FLOAT -- 0.1 (Easy) to 0.9 (Hard)
+    difficulty FLOAT -- 0.1 to 0.9
 );
 
--- Tracks user sessions and their current estimated ability
+-- 2. Stores the 'dynamic' state of the user's progress
 CREATE TABLE user_sessions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_name VARCHAR(50),
-    current_ability FLOAT DEFAULT 0.5,
+    current_ability FLOAT DEFAULT 0.5, -- This moves up/down
     questions_answered INT DEFAULT 0
 );
 
--- Log of responses for the "AI" to learn from
+-- 3. Stores the history for the results graph
 CREATE TABLE response_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     session_id INT,
     question_id INT,
     is_correct BOOLEAN
 );
-
-
