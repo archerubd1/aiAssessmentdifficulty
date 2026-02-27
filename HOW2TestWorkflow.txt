@@ -1,0 +1,10 @@
+How to Test Your AI
+Once the data is inserted, open your quiz.php and follow this testing path to see the AI in action:
+
+Start: The system will serve a 0.5 difficulty question (e.g., "What is a JOIN?").
+
+Scenario A (The Pro): Answer correctly. The system will look for questions closer to 0.6 or 0.7. If you keep winning, it will push you toward the 0.9 range.
+
+Scenario B (The Novice): Answer incorrectly. The system will drop your ability score and serve a 0.2 or 0.3 difficulty question to match your current level.
+
+The Result: Check your user_sessions table in phpMyAdmin. You will see the current_ability value changing dynamically after every refresh.
