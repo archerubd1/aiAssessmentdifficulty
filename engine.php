@@ -1,5 +1,6 @@
 <?php
 // Database connection
+///  recommit 
 $conn = new mysqli("localhost", "root", "root", "ai_assessment");
 
 if ($conn->connect_error) {
